@@ -4,5 +4,4 @@ namespace subcom\Ecwid;
 
 class Ecwid
 {
-    
 }

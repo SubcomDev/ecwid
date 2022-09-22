@@ -60,14 +60,13 @@ class EcwidClient
 
             $ecwid_response = [
                 'status' => json_decode($response->getStatusCode(), true),
-                'content' =>$this->getContent($response)
+                'content' => $this->getContent($response),
             ];
 
             return $ecwid_response;
-
-
+            
         } catch (RequestException $e) {
-
+            
             if ($e->hasResponse()) {
 
                 fwrite($fp, "Status Code: " . PHP_EOL . $e->getResponse()->getStatusCode()."\n");

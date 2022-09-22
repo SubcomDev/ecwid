@@ -48,23 +48,18 @@ class EcwidClient
 
                 return $create_response;
             }
-            
+
 //            return $this->getContent($response);
 
             $ecwid_response = [
                 'status' => json_decode($response->getStatusCode(), true),
-                'content' =>$this->getContent($response)
+                'content' => $this->getContent($response),
             ];
 
             return $ecwid_response;
-
-
         } catch (RequestException $e) {
-            
             if ($e->hasResponse()) {
-                
                 return json_decode($e->getResponse()->getBody(), true);
-                
             }
         }
     }

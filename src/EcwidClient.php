@@ -38,18 +38,25 @@ class EcwidClient
         $client = new Client();
         $api = $this->endpoint_base.$this->version.$endpoint;
 
+        if (!file_exists('logs/')) {
+            mkdir('logs/', 0775, true);
+        }
+
+        $fp = fopen('logs/ecwid.log', 'wb+');
+        fwrite($fp, $api.http_build_query($params) . PHP_EOL);
+
         try {
             $response = $client->request($method, $api, $params);
+            $ownerid = $this->getContent($response);
+
+            fwrite($fp, "Status Code: " . PHP_EOL . $response->getStatusCode()."\n");
+            fwrite($fp, "Body: " . PHP_EOL . $response->getBody()."\n");
+            fclose($fp);
 
             if ($create) {
-                $ownerid = $this->getContent($response);
-
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
-
                 return $create_response;
             }
-            
-//            return $this->getContent($response);
 
             $ecwid_response = [
                 'status' => json_decode($response->getStatusCode(), true),
@@ -60,11 +67,15 @@ class EcwidClient
 
 
         } catch (RequestException $e) {
-            
+
             if ($e->hasResponse()) {
-                
+
+                fwrite($fp, "Status Code: " . PHP_EOL . $e->getResponse()->getStatusCode()."\n");
+                fwrite($fp, "Body: " . PHP_EOL . $e->getResponse()->getBody()."\n");
+                fclose($fp);
+
                 return json_decode($e->getResponse()->getBody(), true);
-                
+
             }
         }
     }

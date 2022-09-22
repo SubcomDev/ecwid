@@ -38,7 +38,7 @@ class EcwidClient
         $client = new Client();
         $api = $this->endpoint_base.$this->version.$endpoint;
 
-        if (!file_exists('logs/')) {
+        if (! file_exists('logs/')) {
             mkdir('logs/', 0775, true);
         }
 
@@ -55,6 +55,7 @@ class EcwidClient
 
             if ($create) {
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
+
                 return $create_response;
             }
 
@@ -64,17 +65,13 @@ class EcwidClient
             ];
 
             return $ecwid_response;
-            
         } catch (RequestException $e) {
-            
             if ($e->hasResponse()) {
-
                 fwrite($fp, "Status Code: " . PHP_EOL . $e->getResponse()->getStatusCode()."\n");
                 fwrite($fp, "Body: " . PHP_EOL . $e->getResponse()->getBody()."\n");
                 fclose($fp);
 
                 return json_decode($e->getResponse()->getBody(), true);
-
             }
         }
     }

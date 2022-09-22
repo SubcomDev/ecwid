@@ -19,11 +19,10 @@ class EcwidClient
     /**
      * @param
      */
-    public function __construct() {
-
-        $this->endpoint_base =config('ecwid.endpoint_base');
-        $this->version =config('ecwid.endpoint_version');
-
+    public function __construct()
+    {
+        $this->endpoint_base = config('ecwid.endpoint_base');
+        $this->version = config('ecwid.endpoint_version');
     }
 
     /**
@@ -40,18 +39,16 @@ class EcwidClient
         $api = $this->endpoint_base.$this->version.$endpoint;
 
         try {
-
             $response = $client->request($method, $api, $params);
 
             if ($create) {
-
                 $ownerid = $this->getContent($response);
 
-                $create_response = ['status' =>200, 'ownerid'=>$ownerid[0]];
+                $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
 
                 return $create_response;
             }
-
+            
 //            return $this->getContent($response);
 
             $ecwid_response = [
@@ -61,14 +58,14 @@ class EcwidClient
 
             return $ecwid_response;
 
+
         } catch (RequestException $e) {
-
+            
             if ($e->hasResponse()) {
-
+                
                 return json_decode($e->getResponse()->getBody(), true);
-
+                
             }
-
         }
     }
 
@@ -85,5 +82,4 @@ class EcwidClient
 
         return $array;
     }
-
 }

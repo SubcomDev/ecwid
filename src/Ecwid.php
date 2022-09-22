@@ -12,11 +12,11 @@ class Ecwid
     /**
      * @param
      */
-    public function __construct() {
-        $this->client  = new EcwidClient();
+    public function __construct()
+    {
+        $this->client = new EcwidClient();
 
-        $this->api_key =config('ecwid.api_key');
-
+        $this->api_key = config('ecwid.api_key');
     }
 
     /**
@@ -26,7 +26,6 @@ class Ecwid
      */
     public function updateOrCreateStore($store, $create = false)
     {
-
         $method = 'POST';
 
         if ($create == true) {
@@ -40,7 +39,7 @@ class Ecwid
         $params = [
             'query' => $store,
         ];
-  
+
         return $this->client->apiCall($method, $endpoint, $params, $create);
     }
 

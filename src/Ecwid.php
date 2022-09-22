@@ -40,7 +40,7 @@ class Ecwid
         $params = [
             'query' => $store,
         ];
-    
+  
         return $this->client->apiCall($method, $endpoint, $params, $create);
     }
 

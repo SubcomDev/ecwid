@@ -4,6 +4,8 @@ namespace subcom\Ecwid;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class EcwidClient
 {
@@ -22,7 +24,7 @@ class EcwidClient
     public function __construct()
     {
         $this->endpoint_base = config('ecwid.endpoint_base');
-        $this->version = config('ecwid.endpoint_version');
+        $this->version = config('ecwid.api_version');
     }
 
     /**
@@ -36,26 +38,27 @@ class EcwidClient
     public function apiCall($method, $endpoint, $params, $create = false)
     {
         $client = new Client();
-        $api = $this->endpoint_base.$this->version.$endpoint;
+        $api = $this->endpoint_base.$this->version.'/'.$endpoint;
 
-        if (! file_exists('logs/')) {
-            mkdir('logs/', 0775, true);
+        if(File::exists('storage/logs/ecwid.log') == false){
+            $channel = Log::build([
+                'driver' => 'single',
+                'path' => storage_path('logs/ecwid.log'),
+            ]);
+        }else{
+            $channel = 'ecwid';
         }
 
-        $fp = fopen('logs/ecwid.log', 'wb+');
-        fwrite($fp, $api.http_build_query($params) . PHP_EOL);
+        Log::stack(['slack', $channel])->info($api.http_build_query($params['query']));
 
         try {
             $response = $client->request($method, $api, $params);
             $ownerid = $this->getContent($response);
 
-            fwrite($fp, "Status Code: " . PHP_EOL . $response->getStatusCode()."\n");
-            fwrite($fp, "Body: " . PHP_EOL . $response->getBody()."\n");
-            fclose($fp);
+            Log::stack(['slack', $channel])->info("Status Code: " .$response->getStatusCode()."\n"."Body: " .$response->getBody()."\n");
 
             if ($create) {
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
-
                 return $create_response;
             }
 
@@ -65,13 +68,15 @@ class EcwidClient
             ];
 
             return $ecwid_response;
+
         } catch (RequestException $e) {
+
             if ($e->hasResponse()) {
-                fwrite($fp, "Status Code: " . PHP_EOL . $e->getResponse()->getStatusCode()."\n");
-                fwrite($fp, "Body: " . PHP_EOL . $e->getResponse()->getBody()."\n");
-                fclose($fp);
+
+                Log::stack(['slack', $channel])->error("Status Code: " .$e->getResponse()->getStatusCode()."\n"."Body: " .$e->getResponse()->getBody()."\n");
 
                 return json_decode($e->getResponse()->getBody(), true);
+
             }
         }
     }

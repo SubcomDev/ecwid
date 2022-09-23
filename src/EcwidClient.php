@@ -40,12 +40,12 @@ class EcwidClient
         $client = new Client();
         $api = $this->endpoint_base.$this->version.'/'.$endpoint;
 
-        if(File::exists('storage/logs/ecwid.log') == false){
+        if (File::exists('storage/logs/ecwid.log') == false) {
             $channel = Log::build([
                 'driver' => 'single',
                 'path' => storage_path('logs/ecwid.log'),
             ]);
-        }else{
+        } else {
             $channel = 'ecwid';
         }
 
@@ -59,6 +59,7 @@ class EcwidClient
 
             if ($create) {
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
+
                 return $create_response;
             }
 
@@ -68,15 +69,11 @@ class EcwidClient
             ];
 
             return $ecwid_response;
-
         } catch (RequestException $e) {
-
             if ($e->hasResponse()) {
-
                 Log::stack(['slack', $channel])->error("Status Code: " .$e->getResponse()->getStatusCode()."\n"."Body: " .$e->getResponse()->getBody()."\n");
 
                 return json_decode($e->getResponse()->getBody(), true);
-
             }
         }
     }

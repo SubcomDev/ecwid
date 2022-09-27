@@ -49,7 +49,7 @@ class EcwidClient
             $channel = 'ecwid';
         }
 
-        Log::stack(['slack', $channel])->info($api.http_build_query($params['query']));
+        Log::stack(['slack', $channel])->info($api.'?'.http_build_query($params['query']));
 
         try {
             $response = $client->request($method, $api, $params);

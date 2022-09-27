@@ -29,7 +29,7 @@ class Ecwid
         $method = 'POST';
 
         if ($create == true) {
-            $endpoint = 'register?';
+            $endpoint = 'register';
         } else {
             $endpoint = 'subscribe';
         }

@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use function Webmozart\Assert\Tests\StaticAnalysis\false;
 
 class EcwidClient
 {
@@ -58,6 +59,7 @@ class EcwidClient
             Log::stack(['slack', $channel])->info("Status Code: " .$response->getStatusCode()."\n"."Body: " .$response->getBody()."\n");
 
             if ($create) {
+                
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
 
                 return $create_response;
@@ -69,12 +71,16 @@ class EcwidClient
             ];
 
             return $ecwid_response;
+            
         } catch (RequestException $e) {
+            
             if ($e->hasResponse()) {
+                
                 Log::stack(['slack', $channel])->error("Status Code: " .$e->getResponse()->getStatusCode()."\n"."Body: " .$e->getResponse()->getBody()."\n");
 
-                return json_decode($e->getResponse()->getBody(), true);
+                return $this->getContent($e->getResponse()->getBody(), true);
             }
+            
         }
     }
 
@@ -82,9 +88,14 @@ class EcwidClient
      * @param $response
      * @return mixed
      */
-    public function getContent($response)
+    public function getContent($response, $error=false)
     {
-        $xml_string = $response->getBody()->getContents();
+        if ($error == false){
+            $xml_string = $response->getBody()->getContents();
+        }else{
+            $xml_string =$response;
+        }
+
         $xml = simplexml_load_string($xml_string);
         $json = json_encode($xml);
         $array = json_decode($json, true);

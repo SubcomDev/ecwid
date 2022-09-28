@@ -40,23 +40,15 @@ class EcwidClient
         $client = new Client();
         $api = $this->endpoint_base.$this->version.'/'.$endpoint;
 
-        if (File::exists('storage/logs/ecwid.log') == false) {
-            $channel = Log::build([
-                'driver' => 'single',
-                'path' => storage_path('logs/ecwid.log'),
-            ]);
-        } else {
-            $channel = 'ecwid';
-        }
-
-        Log::stack(['slack', $channel])->info($api.'?'.http_build_query($params['query']));
+        $this->writeLog($api.'?'.http_build_query($params['query']), false);
 
         try {
             $response = $client->request($method, $api, $params);
             $ownerid = $this->getContent($response);
-
-            Log::stack(['slack', $channel])->info("Status Code: " .$response->getStatusCode()."\n"."Body: " .$response->getBody()."\n");
-
+          
+            $data = "Status Code: " .$response->getStatusCode()."\n"."Body: " .$response->getBody()."\n";
+            $this->writeLog($data, false);
+            
             if ($create) {
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
 
@@ -71,7 +63,8 @@ class EcwidClient
             return $ecwid_response;
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
-                Log::stack(['slack', $channel])->error("Status Code: " .$e->getResponse()->getStatusCode()."\n"."Body: " .$e->getResponse()->getBody()."\n");
+                $data = "Status Code: " .$e->getResponse()->getStatusCode()."\n"."Body: " .$e->getResponse()->getBody()."\n";
+                $this->writeLog($data, true);
 
                 return $this->getContent($e->getResponse()->getBody(), true);
             }
@@ -95,5 +88,22 @@ class EcwidClient
         $array = json_decode($json, true);
 
         return $array;
+    }
+    
+
+    public function writeLog($data, $error = false)
+    {
+        if (File::exists('storage/logs/ecwid.log') == false) {
+            $channel = Log::build([
+                'driver' => 'single',
+                'path' => storage_path('logs/ecwid.log'),
+            ]);
+        } else {
+            $channel = 'ecwid';
+        }
+
+        $type= $error == true ? 'error' : 'info';
+      
+        Log::stack(['slack', $channel])->$type($data);
     }
 }

@@ -45,10 +45,10 @@ class EcwidClient
         try {
             $response = $client->request($method, $api, $params);
             $ownerid = $this->getContent($response);
-          
+
             $data = "Status Code: " .$response->getStatusCode()."\n"."Body: " .$response->getBody()."\n";
             $this->writeLog($data, false);
-            
+
             if ($create) {
                 $create_response = ['status' => 200, 'ownerid' => $ownerid[0]];
 
@@ -89,7 +89,6 @@ class EcwidClient
 
         return $array;
     }
-    
 
     public function writeLog($data, $error = false)
     {
@@ -102,8 +101,8 @@ class EcwidClient
             $channel = 'ecwid';
         }
 
-        $type= $error == true ? 'error' : 'info';
-      
+        $type = $error == true ? 'error' : 'info';
+
         Log::stack(['slack', $channel])->$type($data);
     }
 }

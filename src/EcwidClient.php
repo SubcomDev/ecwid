@@ -90,6 +90,11 @@ class EcwidClient
         return $array;
     }
 
+    /**
+     * @param $data
+     * @param $error
+     * @return void
+     */
     public function writeLog($data, $error = false)
     {
         if (File::exists('storage/logs/ecwid.log') == false) {
